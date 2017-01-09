@@ -171,13 +171,6 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\GitHub\Devil\pixel-art-upscaler\C++\nearest_neighbour\image.cpp" />
-    <ClCompile Include="..\..\..\..\GitHub\Devil\pixel-art-upscaler\C++\nearest_neighbour\nearest_neighbor.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\..\..\GitHub\Devil\pixel-art-upscaler\C++\nearest_neighbour\image.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="..\..\..\..\GitHub\Devil\pixel-art-upscaler\C++\nearest_neighbour\image.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
