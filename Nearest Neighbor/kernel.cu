@@ -8,25 +8,17 @@
 #include <IL/il.h>
 #include "image.h"
 
-#define FACTOR 4
+#define FACTOR 16
 
-cudaError_t addWithCuda(int *c, const int *a, const int *b, unsigned int size);
-
-/*__global__ void addKernel(int *c, const int *a, const int *b)
+__global__ void nearest_neighbor(uint32_t *dp, uint32_t *sp, ILuint width, int factor, int maxThreads)
 {
-    int i = threadIdx.x;
-    c[i] = a[i] + b[i];
+	int i = threadIdx.x;
+	i = i +  maxThreads * blockIdx.x;
 
-	// Here our shit.
-}*/
+	int row = i / width;
+	int col = i % width;
 
-__global__ void nearest_neighbor(uint32_t *dp, uint32_t *sp, ILuint height, ILuint width, int factor)
-{
-	for (int row = 0; row < height; ++row) {
-		for (int col = 0; col < width; ++col) {
-			dp[(row * width + col)] = sp[((row / factor) * width/factor + (col / factor))];
-		}
-	}
+	dp[i] = sp[((row / factor) * width/factor + (col / factor))];
 }
 
 extern void CallNearestNeighbor();
@@ -41,31 +33,32 @@ int main()
 	ilGenImages(1, &handle);
 	ilBindImage(handle);
 	cudaError_t cudaStatus;
+	cudaDeviceProp deviceProp;
 
+	cudaGetDeviceProperties(&deviceProp, 0);
 
 	std::cout << "Read images" << std::endl;
-	Image *org = new Image("image.png");
-	Image *res = new Image("image3.png", org->getWidth() * FACTOR, org->getHeight() * FACTOR);
+	Image *org = new Image("image4.png");
+	Image *res = new Image("image5.png", org->getWidth() * FACTOR, org->getHeight() * FACTOR);
 
 	std::cout << "Execute nearest neighbor algorithm" << std::endl;
 	
 	// prepare
-	uint32_t *input, *out, *temp;
+	uint32_t *input, *out;
+
 	cudaStatus = cudaSetDevice(0);
 	cudaMalloc(&input, org->getHeight() * org->getWidth() * sizeof(uint32_t));
 	cudaMalloc(&out, res->getHeight() * res->getWidth() * sizeof(uint32_t));
 	
 	cudaMemcpy(input, org->getData(), org->getHeight() * org->getWidth() * sizeof(uint32_t), cudaMemcpyHostToDevice);
 	
-
-	nearest_neighbor<<<1,1>>>(out, input, res->getHeight(), res->getWidth(), 4);
+	nearest_neighbor<<<(res->getHeight() * res->getWidth()) / deviceProp.maxThreadsPerBlock, deviceProp.maxThreadsPerBlock>>>(out, input, res->getWidth(), FACTOR, deviceProp.maxThreadsPerBlock);
 	
 	// Check for any errors launching the kernel
 	cudaStatus = cudaGetLastError();
 	if (cudaStatus != cudaSuccess) {
 		fprintf(stderr, "addKernel launch failed: %s\n", cudaGetErrorString(cudaStatus));
 	}
-
 
 	cudaStatus = cudaDeviceSynchronize();
 	if (cudaStatus != cudaSuccess) {
@@ -87,6 +80,8 @@ int main()
 
 	cudaFree(input);
 	cudaFree(out);
+
+	std:getchar();
 
     return 0;
 }

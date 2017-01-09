@@ -14,7 +14,6 @@ class Image {
         ILuint getWidth() { return width; }
         ILuint getHeight() { return height; }
         uint32_t* getData() { return data; }
-		void setData(uint32_t *newdata) { data = newdata; }
         void saveImage();
 
         Image(const char* name);
