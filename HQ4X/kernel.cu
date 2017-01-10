@@ -36,8 +36,8 @@ int main()
 	cudaGetDeviceProperties(&deviceProp, 0);
 
 	std::cout << "Read images" << std::endl;
-	Image *org = new Image("image.png");
-	Image *orgy = new Image("image.png");
+	Image *org = new Image("imageinput.png");
+	Image *orgy = new Image("imageinput.png");
 	//uint32_t *input, *out;
 	hqxInit();
 	
@@ -45,7 +45,7 @@ int main()
 	//out = (uint32_t*)malloc(org->getHeight() * org->getWidth() * sizeof(uint32_t));
 	
 	convertToYUV(orgy, org);
-	Image *res = new Image("imageout10.png", org->getWidth() * FACTOR, org->getHeight() * FACTOR);
+	Image *res = new Image("imageout12.png", org->getWidth() * FACTOR, org->getHeight() * FACTOR);
 
 	
 	hq4x_32(org->getData(), res->getData(), org->getWidth(), org->getHeight(), orgy->getData());
@@ -292,14 +292,12 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 	int row = index / Xres;
 	int col = index % Xres;
 
-	if (index < Xres) {	return;	}
-	if (index > Xres*(Yres-1)) { return; }
-
 	int dpL = Xres*FACTOR;
 	int spL = Xres;
 
-	prevline = index - spL;
-	nextline = index + spL;
+	if (index < Xres) prevline = 0; else prevline = index - spL;
+	if (index > Xres*(Yres - 1)) nextline = 0; else nextline = index + spL;
+
 	int indexVier = (row * Xres * FACTOR + col) * FACTOR;
 
 
