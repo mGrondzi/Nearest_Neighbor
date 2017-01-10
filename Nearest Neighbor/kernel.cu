@@ -8,9 +8,9 @@
 #include <IL/il.h>
 #include "image.h"
 
-#define FACTOR 16
+#define FACTOR 32
 
-__global__ void nearest_neighbor(uint32_t *dp, uint32_t *sp, ILuint width, int factor, int maxThreads)
+__global__ void nearest_neighbor(uint32_t *dp, uint32_t *sp, ILuint width, int maxThreads)
 {
 	int i = threadIdx.x;
 	i = i +  maxThreads * blockIdx.x;
@@ -18,7 +18,7 @@ __global__ void nearest_neighbor(uint32_t *dp, uint32_t *sp, ILuint width, int f
 	int row = i / width;
 	int col = i % width;
 
-	dp[i] = sp[((row / factor) * width/factor + (col / factor))];
+	dp[i] = sp[((row / FACTOR) * width/FACTOR + (col / FACTOR))];
 }
 
 extern void CallNearestNeighbor();
@@ -38,8 +38,8 @@ int main()
 	cudaGetDeviceProperties(&deviceProp, 0);
 
 	std::cout << "Read images" << std::endl;
-	Image *org = new Image("image4.png");
-	Image *res = new Image("image5.png", org->getWidth() * FACTOR, org->getHeight() * FACTOR);
+	Image *org = new Image("image.png");
+	Image *res = new Image("image6.png", org->getWidth() * FACTOR, org->getHeight() * FACTOR);
 
 	std::cout << "Execute nearest neighbor algorithm" << std::endl;
 	
@@ -52,7 +52,7 @@ int main()
 	
 	cudaMemcpy(input, org->getData(), org->getHeight() * org->getWidth() * sizeof(uint32_t), cudaMemcpyHostToDevice);
 	
-	nearest_neighbor<<<(res->getHeight() * res->getWidth()) / deviceProp.maxThreadsPerBlock, deviceProp.maxThreadsPerBlock>>>(out, input, res->getWidth(), FACTOR, deviceProp.maxThreadsPerBlock);
+	nearest_neighbor<<<(res->getHeight() * res->getWidth()) / deviceProp.maxThreadsPerBlock, deviceProp.maxThreadsPerBlock>>>(out, input, res->getWidth(), deviceProp.maxThreadsPerBlock);
 	
 	// Check for any errors launching the kernel
 	cudaStatus = cudaGetLastError();
@@ -80,6 +80,12 @@ int main()
 
 	cudaFree(input);
 	cudaFree(out);
+
+	cudaStatus = cudaDeviceReset();
+	if (cudaStatus != cudaSuccess) {
+		fprintf(stderr, "cudaDeviceReset failed!");
+		return 1;
+	}
 
 	std:getchar();
 

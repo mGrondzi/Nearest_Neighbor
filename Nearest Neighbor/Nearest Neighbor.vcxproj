@@ -171,7 +171,6 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="image.cpp" />
-    <ClCompile Include="nearest_neighbor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="image.h" />
