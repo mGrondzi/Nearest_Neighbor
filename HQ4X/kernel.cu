@@ -19,8 +19,8 @@ uint32_t   RGBtoYUV[16777216];
 uint32_t   YUV1, YUV2;
 
 void hqxInit();
-void hq4x_32(uint32_t * sp, uint32_t * dp, int Xres, int Yres);
-__global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, int Xres, int Yres);
+void hq4x_32(uint32_t * sp, uint32_t * dp, int Xres, int Yres, uint32_t*);
+__global__ void hq4x(uint32_t*, uint32_t, uint32_t*, uint32_t, int, int, uint32_t*);
 void convertToYUV(Image*, Image*);
 
 int main()
@@ -38,11 +38,17 @@ int main()
 	std::cout << "Read images" << std::endl;
 	Image *org = new Image("image.png");
 	Image *orgy = new Image("image.png");
-	convertToYUV(org, orgy);
-	Image *res = new Image("image7.png", org->getWidth() * FACTOR, org->getHeight() * FACTOR);
-
+	//uint32_t *input, *out;
 	hqxInit();
-	hq4x_32(org->getData(), res->getData(), org->getWidth(), org->getHeight());
+	
+	//input = (uint32_t*) malloc(org->getHeight() * org->getWidth() * sizeof(uint32_t));
+	//out = (uint32_t*)malloc(org->getHeight() * org->getWidth() * sizeof(uint32_t));
+	
+	convertToYUV(orgy, org);
+	Image *res = new Image("image8.png", org->getWidth() * FACTOR, org->getHeight() * FACTOR);
+
+	
+	hq4x_32(org->getData(), res->getData(), org->getWidth(), org->getHeight(), orgy->getData());
 
 	std::cout << "Save new image" << std::endl;
 	res->saveImage();
@@ -63,14 +69,14 @@ int main()
     return 0;
 }
 
-void convertToYUV(Image *org, Image *modorg) {
+void convertToYUV(Image *orgy,Image *org) {
+	uint32_t *br = orgy->getData();
 	uint32_t *sp = org->getData();
-	uint32_t *br = modorg->getData();
-	//uint32_t *ret[] = new uint32_t[size];
 
 	for (int row = 0; row < org->getHeight(); ++row) {
 		for (int col = 0; col < org->getWidth(); ++col) {
 			br[row * org->getWidth() + col] = rgb_to_yuv(sp[row * org->getWidth() + col]);
+			std::cout << rgb_to_yuv(sp[row * org->getWidth() + col]) << std::endl;
 		}
 	}
 	//return size;
@@ -233,19 +239,21 @@ void hqxInit(void)
 #define PIXEL33_81    *(dp+dpL+dpL+dpL+3) = Interp8(w[5], w[6]);
 #define PIXEL33_82    *(dp+dpL+dpL+dpL+3) = Interp8(w[5], w[8]);
 
-void hq4x_32(uint32_t * sp, uint32_t * dp, int Xres, int Yres)
+void hq4x_32(uint32_t * sp, uint32_t * dp, int Xres, int Yres, uint32_t * orgy)
 {
 	cudaError_t cudaStatus;
 	uint32_t rowBytesL = Xres * FACTOR;
-	uint32_t *input, *out;
+	uint32_t *input, *out, *yuv;
 
 	cudaStatus = cudaSetDevice(0);
 	cudaMalloc(&input, Xres * Yres * sizeof(uint32_t));
 	cudaMalloc(&out, Xres * FACTOR * Yres * FACTOR * sizeof(uint32_t));
+	cudaMalloc(&yuv, Xres * Yres * sizeof(uint32_t));
 
 	cudaMemcpy(input, sp, Xres * Yres * sizeof(uint32_t), cudaMemcpyHostToDevice);
+	cudaMemcpy(yuv, orgy, Xres * Yres * sizeof(uint32_t), cudaMemcpyHostToDevice);
 
-	hq4x<<<1,1>>>(input, rowBytesL, out, rowBytesL*FACTOR, Xres, Yres);
+	hq4x<<<1,1>>>(input, rowBytesL, out, rowBytesL*FACTOR, Xres, Yres, yuv);
 	//hq4x_32_rb(sp, rowBytesL, dp, rowBytesL * 4, Xres, Yres);
 
 	cudaStatus = cudaGetLastError();
@@ -264,12 +272,17 @@ void hq4x_32(uint32_t * sp, uint32_t * dp, int Xres, int Yres)
 	}
 }
 
+uint32_t calcValuesArround(int prevline,int nexline) {
+	
+	return 0;
+}
 
-__global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, int Xres, int Yres)
+__global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, int Xres, int Yres, uint32_t *yuv)
 {
 	int  i, j, k;
 	int  prevline, nextline;
 	uint32_t w[10];
+	uint32_t y[10];
 	int dpL = (drb >> 2);
 	int spL = (srb >> 2);
 	uint8_t *sRowP = (uint8_t *)sp;
@@ -297,18 +310,27 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			w[2] = *(sp + prevline);
 			w[5] = *sp;
 			w[8] = *(sp + nextline);
+			y[2] = *(yuv + prevline);
+			y[5] = *yuv;
+			y[8] = *(yuv + nextline);
 
 			if (i>0)
 			{
 				w[1] = *(sp + prevline - 1);
 				w[4] = *(sp - 1);
 				w[7] = *(sp + nextline - 1);
+				y[1] = *(yuv + prevline - 1);
+				y[4] = *(yuv - 1);
+				y[7] = *(yuv + nextline - 1);
 			}
 			else
 			{
 				w[1] = w[2];
 				w[4] = w[5];
 				w[7] = w[8];
+				y[1] = y[2];
+				y[4] = y[5];
+				y[7] = y[8];
 			}
 
 			if (i<Xres - 1)
@@ -316,18 +338,24 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 				w[3] = *(sp + prevline + 1);
 				w[6] = *(sp + 1);
 				w[9] = *(sp + nextline + 1);
+				y[3] = *(yuv + prevline + 1);
+				y[6] = *(yuv + 1);
+				y[9] = *(yuv + nextline + 1);
 			}
 			else
 			{
 				w[3] = w[2];
 				w[6] = w[5];
 				w[9] = w[8];
+				y[3] = y[2];
+				y[6] = y[5];
+				y[9] = y[8];
 			}
 
 			int pattern = 0;
 			int flag = 1;
 
-			yuv1 = w[5];
+			yuv1 = y[5];
 
 			for (k = 1; k <= 9; k++)
 			{
@@ -335,7 +363,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 
 				if (w[k] != w[5])
 				{
-					yuv2 = w[k];
+					yuv2 = y[k];
 					if (yuv_diff(yuv1, yuv2))
 						pattern |= flag;
 				}
