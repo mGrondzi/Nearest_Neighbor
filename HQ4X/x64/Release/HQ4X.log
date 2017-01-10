@@ -7,7 +7,6 @@ CUDACOMPILE : nvcc warning : The 'compute_20', 'sm_20', and 'sm_21' architecture
   kernel.cu
 C:/Users/manue/Documents/Visual Studio 2015/Projects/Nearest_Neighbor/HQ4X/kernel.cu(67): warning C4102: 'std': unreferenced label
 C:/Users/manue/Documents/Visual Studio 2015/Projects/Nearest_Neighbor/HQ4X/kernel.cu(76): warning C4018: '<': signed/unsigned mismatch
-C:/Users/manue/Documents/Visual Studio 2015/Projects/Nearest_Neighbor/HQ4X/kernel.cu(77): warning C4018: '<': signed/unsigned mismatch
   Generating code
   0 of 8 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation

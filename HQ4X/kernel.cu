@@ -36,8 +36,8 @@ int main()
 	cudaGetDeviceProperties(&deviceProp, 0);
 
 	std::cout << "Read images" << std::endl;
-	Image *org = new Image("image.png");
-	Image *orgy = new Image("image.png");
+	Image *org = new Image("imageinput.png");
+	Image *orgy = new Image("imageinput.png");
 	//uint32_t *input, *out;
 	hqxInit();
 	
@@ -45,7 +45,7 @@ int main()
 	//out = (uint32_t*)malloc(org->getHeight() * org->getWidth() * sizeof(uint32_t));
 	
 	convertToYUV(orgy, org);
-	Image *res = new Image("image8.png", org->getWidth() * FACTOR, org->getHeight() * FACTOR);
+	Image *res = new Image("imageout9.png", org->getWidth() * FACTOR, org->getHeight() * FACTOR);
 
 	
 	hq4x_32(org->getData(), res->getData(), org->getWidth(), org->getHeight(), orgy->getData());
@@ -73,11 +73,8 @@ void convertToYUV(Image *orgy,Image *org) {
 	uint32_t *br = orgy->getData();
 	uint32_t *sp = org->getData();
 
-	for (int row = 0; row < org->getHeight(); ++row) {
-		for (int col = 0; col < org->getWidth(); ++col) {
-			br[row * org->getWidth() + col] = rgb_to_yuv(sp[row * org->getWidth() + col]);
-			std::cout << rgb_to_yuv(sp[row * org->getWidth() + col]) << std::endl;
-		}
+	for (int row = 0; row < org->getHeight() * org->getWidth(); ++row) {
+			br[row] = rgb_to_yuv(sp[row]);
 	}
 	//return size;
 }
@@ -688,7 +685,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			{
 				PIXEL00_80
 					PIXEL01_10
-					if (Diff(w[2], w[6]))
+					if (Diff(y[2], y[6]))
 					{
 						PIXEL02_10
 							PIXEL03_80
@@ -727,7 +724,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL13_10
 					PIXEL20_61
 					PIXEL21_30
-					if (Diff(w[6], w[8]))
+					if (Diff(y[6], y[8]))
 					{
 						PIXEL22_30
 							PIXEL23_10
@@ -756,7 +753,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL11_30
 					PIXEL12_70
 					PIXEL13_60
-					if (Diff(w[8], w[4]))
+					if (Diff(y[8], y[4]))
 					{
 						PIXEL20_10
 							PIXEL21_30
@@ -779,7 +776,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			case 10:
 			case 138:
 			{
-				if (Diff(w[4], w[2]))
+				if (Diff(y[4], y[2]))
 				{
 					PIXEL00_80
 						PIXEL01_10
@@ -940,7 +937,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			{
 				PIXEL00_80
 					PIXEL01_10
-					if (Diff(w[2], w[6]))
+					if (Diff(y[2], y[6]))
 					{
 						PIXEL02_0
 							PIXEL03_0
@@ -979,7 +976,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL20_61
 					PIXEL21_30
 					PIXEL22_0
-					if (Diff(w[6], w[8]))
+					if (Diff(y[6], y[8]))
 					{
 						PIXEL23_0
 							PIXEL32_0
@@ -1006,7 +1003,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL11_30
 					PIXEL12_70
 					PIXEL13_60
-					if (Diff(w[8], w[4]))
+					if (Diff(y[8], y[4]))
 					{
 						PIXEL20_0
 							PIXEL30_0
@@ -1028,7 +1025,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			case 11:
 			case 139:
 			{
-				if (Diff(w[4], w[2]))
+				if (Diff(y[4], y[2]))
 				{
 					PIXEL00_0
 						PIXEL01_0
@@ -1058,7 +1055,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			case 19:
 			case 51:
 			{
-				if (Diff(w[2], w[6]))
+				if (Diff(y[2], y[6]))
 				{
 					PIXEL00_81
 						PIXEL01_31
@@ -1093,7 +1090,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			{
 				PIXEL00_80
 					PIXEL01_10
-					if (Diff(w[2], w[6]))
+					if (Diff(y[2], y[6]))
 					{
 						PIXEL02_10
 							PIXEL03_80
@@ -1127,7 +1124,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 				PIXEL00_20
 					PIXEL01_60
 					PIXEL02_81
-					if (Diff(w[6], w[8]))
+					if (Diff(y[6], y[8]))
 					{
 						PIXEL03_81
 							PIXEL13_31
@@ -1167,7 +1164,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL13_10
 					PIXEL20_82
 					PIXEL21_32
-					if (Diff(w[6], w[8]))
+					if (Diff(y[6], y[8]))
 					{
 						PIXEL22_30
 							PIXEL23_10
@@ -1198,7 +1195,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL11_30
 					PIXEL12_70
 					PIXEL13_60
-					if (Diff(w[8], w[4]))
+					if (Diff(y[8], y[4]))
 					{
 						PIXEL20_10
 							PIXEL21_30
@@ -1223,7 +1220,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			case 73:
 			case 77:
 			{
-				if (Diff(w[8], w[4]))
+				if (Diff(y[8], y[4]))
 				{
 					PIXEL00_82
 						PIXEL10_32
@@ -1256,7 +1253,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			case 42:
 			case 170:
 			{
-				if (Diff(w[4], w[2]))
+				if (Diff(y[4], y[2]))
 				{
 					PIXEL00_80
 						PIXEL01_10
@@ -1289,7 +1286,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			case 14:
 			case 142:
 			{
-				if (Diff(w[4], w[2]))
+				if (Diff(y[4], y[2]))
 				{
 					PIXEL00_80
 						PIXEL01_10
@@ -1482,7 +1479,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			case 26:
 			case 31:
 			{
-				if (Diff(w[4], w[2]))
+				if (Diff(y[4], y[2]))
 				{
 					PIXEL00_0
 						PIXEL01_0
@@ -1494,7 +1491,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 						PIXEL01_50
 						PIXEL10_50
 				}
-				if (Diff(w[2], w[6]))
+				if (Diff(y[2], y[6]))
 				{
 					PIXEL02_0
 						PIXEL03_0
@@ -1523,7 +1520,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			{
 				PIXEL00_80
 					PIXEL01_10
-					if (Diff(w[2], w[6]))
+					if (Diff(y[2], y[6]))
 					{
 						PIXEL02_0
 							PIXEL03_0
@@ -1541,7 +1538,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL20_61
 					PIXEL21_30
 					PIXEL22_0
-					if (Diff(w[6], w[8]))
+					if (Diff(y[6], y[8]))
 					{
 						PIXEL23_0
 							PIXEL32_0
@@ -1568,7 +1565,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL11_30
 					PIXEL12_30
 					PIXEL13_10
-					if (Diff(w[8], w[4]))
+					if (Diff(y[8], y[4]))
 					{
 						PIXEL20_0
 							PIXEL30_0
@@ -1582,7 +1579,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					}
 				PIXEL21_0
 					PIXEL22_0
-					if (Diff(w[6], w[8]))
+					if (Diff(y[6], y[8]))
 					{
 						PIXEL23_0
 							PIXEL32_0
@@ -1599,7 +1596,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			case 74:
 			case 107:
 			{
-				if (Diff(w[4], w[2]))
+				if (Diff(y[4], y[2]))
 				{
 					PIXEL00_0
 						PIXEL01_0
@@ -1616,7 +1613,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL11_0
 					PIXEL12_30
 					PIXEL13_61
-					if (Diff(w[8], w[4]))
+					if (Diff(y[8], y[4]))
 					{
 						PIXEL20_0
 							PIXEL30_0
@@ -1637,7 +1634,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			}
 			case 27:
 			{
-				if (Diff(w[4], w[2]))
+				if (Diff(y[4], y[2]))
 				{
 					PIXEL00_0
 						PIXEL01_0
@@ -1668,7 +1665,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			{
 				PIXEL00_80
 					PIXEL01_10
-					if (Diff(w[2], w[6]))
+					if (Diff(y[2], y[6]))
 					{
 						PIXEL02_0
 							PIXEL03_0
@@ -1706,7 +1703,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL20_10
 					PIXEL21_30
 					PIXEL22_0
-					if (Diff(w[6], w[8]))
+					if (Diff(y[6], y[8]))
 					{
 						PIXEL23_0
 							PIXEL32_0
@@ -1732,7 +1729,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL11_30
 					PIXEL12_30
 					PIXEL13_61
-					if (Diff(w[8], w[4]))
+					if (Diff(y[8], y[4]))
 					{
 						PIXEL20_0
 							PIXEL30_0
@@ -1755,7 +1752,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			{
 				PIXEL00_80
 					PIXEL01_10
-					if (Diff(w[2], w[6]))
+					if (Diff(y[2], y[6]))
 					{
 						PIXEL02_0
 							PIXEL03_0
@@ -1793,7 +1790,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL20_61
 					PIXEL21_30
 					PIXEL22_0
-					if (Diff(w[6], w[8]))
+					if (Diff(y[6], y[8]))
 					{
 						PIXEL23_0
 							PIXEL32_0
@@ -1819,7 +1816,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL11_30
 					PIXEL12_30
 					PIXEL13_10
-					if (Diff(w[8], w[4]))
+					if (Diff(y[8], y[4]))
 					{
 						PIXEL20_0
 							PIXEL30_0
@@ -1840,7 +1837,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			}
 			case 75:
 			{
-				if (Diff(w[4], w[2]))
+				if (Diff(y[4], y[2]))
 				{
 					PIXEL00_0
 						PIXEL01_0
@@ -2109,7 +2106,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			}
 			case 58:
 			{
-				if (Diff(w[4], w[2]))
+				if (Diff(y[4], y[2]))
 				{
 					PIXEL00_80
 						PIXEL01_10
@@ -2123,7 +2120,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 						PIXEL10_11
 						PIXEL11_0
 				}
-				if (Diff(w[2], w[6]))
+				if (Diff(y[2], y[6]))
 				{
 					PIXEL02_10
 						PIXEL03_80
@@ -2151,7 +2148,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			{
 				PIXEL00_81
 					PIXEL01_31
-					if (Diff(w[2], w[6]))
+					if (Diff(y[2], y[6]))
 					{
 						PIXEL02_10
 							PIXEL03_80
@@ -2169,7 +2166,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL11_31
 					PIXEL20_61
 					PIXEL21_30
-					if (Diff(w[6], w[8]))
+					if (Diff(y[6], y[8]))
 					{
 						PIXEL22_30
 							PIXEL23_10
@@ -2197,7 +2194,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL11_30
 					PIXEL12_31
 					PIXEL13_31
-					if (Diff(w[8], w[4]))
+					if (Diff(y[8], y[4]))
 					{
 						PIXEL20_10
 							PIXEL21_30
@@ -2211,7 +2208,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 							PIXEL30_20
 							PIXEL31_11
 					}
-				if (Diff(w[6], w[8]))
+				if (Diff(y[6], y[8]))
 				{
 					PIXEL22_30
 						PIXEL23_10
@@ -2229,7 +2226,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			}
 			case 202:
 			{
-				if (Diff(w[4], w[2]))
+				if (Diff(y[4], y[2]))
 				{
 					PIXEL00_80
 						PIXEL01_10
@@ -2247,7 +2244,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL03_80
 					PIXEL12_30
 					PIXEL13_61
-					if (Diff(w[8], w[4]))
+					if (Diff(y[8], y[4]))
 					{
 						PIXEL20_10
 							PIXEL21_30
@@ -2269,7 +2266,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			}
 			case 78:
 			{
-				if (Diff(w[4], w[2]))
+				if (Diff(y[4], y[2]))
 				{
 					PIXEL00_80
 						PIXEL01_10
@@ -2287,7 +2284,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL03_82
 					PIXEL12_32
 					PIXEL13_82
-					if (Diff(w[8], w[4]))
+					if (Diff(y[8], y[4]))
 					{
 						PIXEL20_10
 							PIXEL21_30
@@ -2309,7 +2306,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			}
 			case 154:
 			{
-				if (Diff(w[4], w[2]))
+				if (Diff(y[4], y[2]))
 				{
 					PIXEL00_80
 						PIXEL01_10
@@ -2323,7 +2320,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 						PIXEL10_11
 						PIXEL11_0
 				}
-				if (Diff(w[2], w[6]))
+				if (Diff(y[2], y[6]))
 				{
 					PIXEL02_10
 						PIXEL03_80
@@ -2351,7 +2348,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			{
 				PIXEL00_80
 					PIXEL01_10
-					if (Diff(w[2], w[6]))
+					if (Diff(y[2], y[6]))
 					{
 						PIXEL02_10
 							PIXEL03_80
@@ -2369,7 +2366,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL11_30
 					PIXEL20_82
 					PIXEL21_32
-					if (Diff(w[6], w[8]))
+					if (Diff(y[6], y[8]))
 					{
 						PIXEL22_30
 							PIXEL23_10
@@ -2397,7 +2394,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL11_32
 					PIXEL12_30
 					PIXEL13_10
-					if (Diff(w[8], w[4]))
+					if (Diff(y[8], y[4]))
 					{
 						PIXEL20_10
 							PIXEL21_30
@@ -2411,7 +2408,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 							PIXEL30_20
 							PIXEL31_11
 					}
-				if (Diff(w[6], w[8]))
+				if (Diff(y[6], y[8]))
 				{
 					PIXEL22_30
 						PIXEL23_10
@@ -2429,7 +2426,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			}
 			case 90:
 			{
-				if (Diff(w[4], w[2]))
+				if (Diff(y[4], y[2]))
 				{
 					PIXEL00_80
 						PIXEL01_10
@@ -2443,7 +2440,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 						PIXEL10_11
 						PIXEL11_0
 				}
-				if (Diff(w[2], w[6]))
+				if (Diff(y[2], y[6]))
 				{
 					PIXEL02_10
 						PIXEL03_80
@@ -2457,7 +2454,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 						PIXEL12_0
 						PIXEL13_12
 				}
-				if (Diff(w[8], w[4]))
+				if (Diff(y[8], y[4]))
 				{
 					PIXEL20_10
 						PIXEL21_30
@@ -2471,7 +2468,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 						PIXEL30_20
 						PIXEL31_11
 				}
-				if (Diff(w[6], w[8]))
+				if (Diff(y[6], y[8]))
 				{
 					PIXEL22_30
 						PIXEL23_10
@@ -2490,7 +2487,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			case 55:
 			case 23:
 			{
-				if (Diff(w[2], w[6]))
+				if (Diff(y[2], y[6]))
 				{
 					PIXEL00_81
 						PIXEL01_31
@@ -2525,7 +2522,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			{
 				PIXEL00_80
 					PIXEL01_10
-					if (Diff(w[2], w[6]))
+					if (Diff(y[2], y[6]))
 					{
 						PIXEL02_0
 							PIXEL03_0
@@ -2559,7 +2556,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 				PIXEL00_20
 					PIXEL01_60
 					PIXEL02_81
-					if (Diff(w[6], w[8]))
+					if (Diff(y[6], y[8]))
 					{
 						PIXEL03_81
 							PIXEL13_31
@@ -2599,7 +2596,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL13_10
 					PIXEL20_82
 					PIXEL21_32
-					if (Diff(w[6], w[8]))
+					if (Diff(y[6], y[8]))
 					{
 						PIXEL22_0
 							PIXEL23_0
@@ -2630,7 +2627,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL11_30
 					PIXEL12_70
 					PIXEL13_60
-					if (Diff(w[8], w[4]))
+					if (Diff(y[8], y[4]))
 					{
 						PIXEL20_0
 							PIXEL21_0
@@ -2655,7 +2652,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			case 109:
 			case 105:
 			{
-				if (Diff(w[8], w[4]))
+				if (Diff(y[8], y[4]))
 				{
 					PIXEL00_82
 						PIXEL10_32
@@ -2688,7 +2685,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			case 171:
 			case 43:
 			{
-				if (Diff(w[4], w[2]))
+				if (Diff(y[4], y[2]))
 				{
 					PIXEL00_0
 						PIXEL01_0
@@ -2721,7 +2718,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			case 143:
 			case 15:
 			{
-				if (Diff(w[4], w[2]))
+				if (Diff(y[4], y[2]))
 				{
 					PIXEL00_0
 						PIXEL01_0
@@ -2761,7 +2758,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL11_30
 					PIXEL12_31
 					PIXEL13_31
-					if (Diff(w[8], w[4]))
+					if (Diff(y[8], y[4]))
 					{
 						PIXEL20_0
 							PIXEL30_0
@@ -2782,7 +2779,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			}
 			case 203:
 			{
-				if (Diff(w[4], w[2]))
+				if (Diff(y[4], y[2]))
 				{
 					PIXEL00_0
 						PIXEL01_0
@@ -2813,7 +2810,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			{
 				PIXEL00_80
 					PIXEL01_10
-					if (Diff(w[2], w[6]))
+					if (Diff(y[2], y[6]))
 					{
 						PIXEL02_0
 							PIXEL03_0
@@ -2851,7 +2848,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL20_61
 					PIXEL21_30
 					PIXEL22_0
-					if (Diff(w[6], w[8]))
+					if (Diff(y[6], y[8]))
 					{
 						PIXEL23_0
 							PIXEL32_0
@@ -2871,7 +2868,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			{
 				PIXEL00_80
 					PIXEL01_10
-					if (Diff(w[2], w[6]))
+					if (Diff(y[2], y[6]))
 					{
 						PIXEL02_0
 							PIXEL03_0
@@ -2909,7 +2906,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL20_10
 					PIXEL21_30
 					PIXEL22_0
-					if (Diff(w[6], w[8]))
+					if (Diff(y[6], y[8]))
 					{
 						PIXEL23_0
 							PIXEL32_0
@@ -2935,7 +2932,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL11_30
 					PIXEL12_32
 					PIXEL13_82
-					if (Diff(w[8], w[4]))
+					if (Diff(y[8], y[4]))
 					{
 						PIXEL20_0
 							PIXEL30_0
@@ -2956,7 +2953,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			}
 			case 155:
 			{
-				if (Diff(w[4], w[2]))
+				if (Diff(y[4], y[2]))
 				{
 					PIXEL00_0
 						PIXEL01_0
@@ -3153,7 +3150,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL11_30
 					PIXEL12_31
 					PIXEL13_31
-					if (Diff(w[8], w[4]))
+					if (Diff(y[8], y[4]))
 					{
 						PIXEL20_10
 							PIXEL21_30
@@ -3168,7 +3165,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 							PIXEL31_11
 					}
 				PIXEL22_0
-					if (Diff(w[6], w[8]))
+					if (Diff(y[6], y[8]))
 					{
 						PIXEL23_0
 							PIXEL32_0
@@ -3184,7 +3181,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			}
 			case 158:
 			{
-				if (Diff(w[4], w[2]))
+				if (Diff(y[4], y[2]))
 				{
 					PIXEL00_80
 						PIXEL01_10
@@ -3198,7 +3195,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 						PIXEL10_11
 						PIXEL11_0
 				}
-				if (Diff(w[2], w[6]))
+				if (Diff(y[2], y[6]))
 				{
 					PIXEL02_0
 						PIXEL03_0
@@ -3223,7 +3220,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			}
 			case 234:
 			{
-				if (Diff(w[4], w[2]))
+				if (Diff(y[4], y[2]))
 				{
 					PIXEL00_80
 						PIXEL01_10
@@ -3241,7 +3238,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL03_80
 					PIXEL12_30
 					PIXEL13_61
-					if (Diff(w[8], w[4]))
+					if (Diff(y[8], y[4]))
 					{
 						PIXEL20_0
 							PIXEL30_0
@@ -3264,7 +3261,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			{
 				PIXEL00_80
 					PIXEL01_10
-					if (Diff(w[2], w[6]))
+					if (Diff(y[2], y[6]))
 					{
 						PIXEL02_10
 							PIXEL03_80
@@ -3283,7 +3280,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL20_82
 					PIXEL21_32
 					PIXEL22_0
-					if (Diff(w[6], w[8]))
+					if (Diff(y[6], y[8]))
 					{
 						PIXEL23_0
 							PIXEL32_0
@@ -3301,7 +3298,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			}
 			case 59:
 			{
-				if (Diff(w[4], w[2]))
+				if (Diff(y[4], y[2]))
 				{
 					PIXEL00_0
 						PIXEL01_0
@@ -3313,7 +3310,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 						PIXEL01_50
 						PIXEL10_50
 				}
-				if (Diff(w[2], w[6]))
+				if (Diff(y[2], y[6]))
 				{
 					PIXEL02_10
 						PIXEL03_80
@@ -3348,7 +3345,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL11_32
 					PIXEL12_30
 					PIXEL13_10
-					if (Diff(w[8], w[4]))
+					if (Diff(y[8], y[4]))
 					{
 						PIXEL20_0
 							PIXEL30_0
@@ -3361,7 +3358,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 							PIXEL31_50
 					}
 				PIXEL21_0
-					if (Diff(w[6], w[8]))
+					if (Diff(y[6], y[8]))
 					{
 						PIXEL22_30
 							PIXEL23_10
@@ -3381,7 +3378,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			{
 				PIXEL00_81
 					PIXEL01_31
-					if (Diff(w[2], w[6]))
+					if (Diff(y[2], y[6]))
 					{
 						PIXEL02_0
 							PIXEL03_0
@@ -3398,7 +3395,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL12_0
 					PIXEL20_61
 					PIXEL21_30
-					if (Diff(w[6], w[8]))
+					if (Diff(y[6], y[8]))
 					{
 						PIXEL22_30
 							PIXEL23_10
@@ -3418,7 +3415,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			}
 			case 79:
 			{
-				if (Diff(w[4], w[2]))
+				if (Diff(y[4], y[2]))
 				{
 					PIXEL00_0
 						PIXEL01_0
@@ -3435,7 +3432,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL11_0
 					PIXEL12_32
 					PIXEL13_82
-					if (Diff(w[8], w[4]))
+					if (Diff(y[8], y[4]))
 					{
 						PIXEL20_10
 							PIXEL21_30
@@ -3457,7 +3454,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			}
 			case 122:
 			{
-				if (Diff(w[4], w[2]))
+				if (Diff(y[4], y[2]))
 				{
 					PIXEL00_80
 						PIXEL01_10
@@ -3471,7 +3468,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 						PIXEL10_11
 						PIXEL11_0
 				}
-				if (Diff(w[2], w[6]))
+				if (Diff(y[2], y[6]))
 				{
 					PIXEL02_10
 						PIXEL03_80
@@ -3485,7 +3482,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 						PIXEL12_0
 						PIXEL13_12
 				}
-				if (Diff(w[8], w[4]))
+				if (Diff(y[8], y[4]))
 				{
 					PIXEL20_0
 						PIXEL30_0
@@ -3498,7 +3495,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 						PIXEL31_50
 				}
 				PIXEL21_0
-					if (Diff(w[6], w[8]))
+					if (Diff(y[6], y[8]))
 					{
 						PIXEL22_30
 							PIXEL23_10
@@ -3516,7 +3513,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			}
 			case 94:
 			{
-				if (Diff(w[4], w[2]))
+				if (Diff(y[4], y[2]))
 				{
 					PIXEL00_80
 						PIXEL01_10
@@ -3530,7 +3527,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 						PIXEL10_11
 						PIXEL11_0
 				}
-				if (Diff(w[2], w[6]))
+				if (Diff(y[2], y[6]))
 				{
 					PIXEL02_0
 						PIXEL03_0
@@ -3543,7 +3540,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 						PIXEL13_50
 				}
 				PIXEL12_0
-					if (Diff(w[8], w[4]))
+					if (Diff(y[8], y[4]))
 					{
 						PIXEL20_10
 							PIXEL21_30
@@ -3557,7 +3554,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 							PIXEL30_20
 							PIXEL31_11
 					}
-				if (Diff(w[6], w[8]))
+				if (Diff(y[6], y[8]))
 				{
 					PIXEL22_30
 						PIXEL23_10
@@ -3575,7 +3572,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			}
 			case 218:
 			{
-				if (Diff(w[4], w[2]))
+				if (Diff(y[4], y[2]))
 				{
 					PIXEL00_80
 						PIXEL01_10
@@ -3589,7 +3586,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 						PIXEL10_11
 						PIXEL11_0
 				}
-				if (Diff(w[2], w[6]))
+				if (Diff(y[2], y[6]))
 				{
 					PIXEL02_10
 						PIXEL03_80
@@ -3603,7 +3600,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 						PIXEL12_0
 						PIXEL13_12
 				}
-				if (Diff(w[8], w[4]))
+				if (Diff(y[8], y[4]))
 				{
 					PIXEL20_10
 						PIXEL21_30
@@ -3618,7 +3615,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 						PIXEL31_11
 				}
 				PIXEL22_0
-					if (Diff(w[6], w[8]))
+					if (Diff(y[6], y[8]))
 					{
 						PIXEL23_0
 							PIXEL32_0
@@ -3634,7 +3631,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			}
 			case 91:
 			{
-				if (Diff(w[4], w[2]))
+				if (Diff(y[4], y[2]))
 				{
 					PIXEL00_0
 						PIXEL01_0
@@ -3646,7 +3643,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 						PIXEL01_50
 						PIXEL10_50
 				}
-				if (Diff(w[2], w[6]))
+				if (Diff(y[2], y[6]))
 				{
 					PIXEL02_10
 						PIXEL03_80
@@ -3661,7 +3658,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 						PIXEL13_12
 				}
 				PIXEL11_0
-					if (Diff(w[8], w[4]))
+					if (Diff(y[8], y[4]))
 					{
 						PIXEL20_10
 							PIXEL21_30
@@ -3675,7 +3672,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 							PIXEL30_20
 							PIXEL31_11
 					}
-				if (Diff(w[6], w[8]))
+				if (Diff(y[6], y[8]))
 				{
 					PIXEL22_30
 						PIXEL23_10
@@ -3773,7 +3770,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			}
 			case 186:
 			{
-				if (Diff(w[4], w[2]))
+				if (Diff(y[4], y[2]))
 				{
 					PIXEL00_80
 						PIXEL01_10
@@ -3787,7 +3784,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 						PIXEL10_11
 						PIXEL11_0
 				}
-				if (Diff(w[2], w[6]))
+				if (Diff(y[2], y[6]))
 				{
 					PIXEL02_10
 						PIXEL03_80
@@ -3815,7 +3812,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			{
 				PIXEL00_81
 					PIXEL01_31
-					if (Diff(w[2], w[6]))
+					if (Diff(y[2], y[6]))
 					{
 						PIXEL02_10
 							PIXEL03_80
@@ -3833,7 +3830,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL11_31
 					PIXEL20_82
 					PIXEL21_32
-					if (Diff(w[6], w[8]))
+					if (Diff(y[6], y[8]))
 					{
 						PIXEL22_30
 							PIXEL23_10
@@ -3861,7 +3858,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL11_32
 					PIXEL12_31
 					PIXEL13_31
-					if (Diff(w[8], w[4]))
+					if (Diff(y[8], y[4]))
 					{
 						PIXEL20_10
 							PIXEL21_30
@@ -3875,7 +3872,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 							PIXEL30_20
 							PIXEL31_11
 					}
-				if (Diff(w[6], w[8]))
+				if (Diff(y[6], y[8]))
 				{
 					PIXEL22_30
 						PIXEL23_10
@@ -3893,7 +3890,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			}
 			case 206:
 			{
-				if (Diff(w[4], w[2]))
+				if (Diff(y[4], y[2]))
 				{
 					PIXEL00_80
 						PIXEL01_10
@@ -3911,7 +3908,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL03_82
 					PIXEL12_32
 					PIXEL13_82
-					if (Diff(w[8], w[4]))
+					if (Diff(y[8], y[4]))
 					{
 						PIXEL20_10
 							PIXEL21_30
@@ -3942,7 +3939,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL11_32
 					PIXEL12_70
 					PIXEL13_60
-					if (Diff(w[8], w[4]))
+					if (Diff(y[8], y[4]))
 					{
 						PIXEL20_10
 							PIXEL21_30
@@ -3965,7 +3962,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			case 174:
 			case 46:
 			{
-				if (Diff(w[4], w[2]))
+				if (Diff(y[4], y[2]))
 				{
 					PIXEL00_80
 						PIXEL01_10
@@ -3998,7 +3995,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			{
 				PIXEL00_81
 					PIXEL01_31
-					if (Diff(w[2], w[6]))
+					if (Diff(y[2], y[6]))
 					{
 						PIXEL02_10
 							PIXEL03_80
@@ -4037,7 +4034,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL13_31
 					PIXEL20_82
 					PIXEL21_32
-					if (Diff(w[6], w[8]))
+					if (Diff(y[6], y[8]))
 					{
 						PIXEL22_30
 							PIXEL23_10
@@ -4099,7 +4096,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			{
 				PIXEL00_80
 					PIXEL01_10
-					if (Diff(w[2], w[6]))
+					if (Diff(y[2], y[6]))
 					{
 						PIXEL02_0
 							PIXEL03_0
@@ -4114,7 +4111,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 				PIXEL10_10
 					PIXEL11_30
 					PIXEL12_0
-					if (Diff(w[8], w[4]))
+					if (Diff(y[8], y[4]))
 					{
 						PIXEL20_0
 							PIXEL30_0
@@ -4135,7 +4132,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			}
 			case 219:
 			{
-				if (Diff(w[4], w[2]))
+				if (Diff(y[4], y[2]))
 				{
 					PIXEL00_0
 						PIXEL01_0
@@ -4155,7 +4152,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL20_10
 					PIXEL21_30
 					PIXEL22_0
-					if (Diff(w[6], w[8]))
+					if (Diff(y[6], y[8]))
 					{
 						PIXEL23_0
 							PIXEL32_0
@@ -4173,7 +4170,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			}
 			case 125:
 			{
-				if (Diff(w[8], w[4]))
+				if (Diff(y[8], y[4]))
 				{
 					PIXEL00_82
 						PIXEL10_32
@@ -4208,7 +4205,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 				PIXEL00_82
 					PIXEL01_82
 					PIXEL02_81
-					if (Diff(w[6], w[8]))
+					if (Diff(y[6], y[8]))
 					{
 						PIXEL03_81
 							PIXEL13_31
@@ -4237,7 +4234,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			}
 			case 207:
 			{
-				if (Diff(w[4], w[2]))
+				if (Diff(y[4], y[2]))
 				{
 					PIXEL00_0
 						PIXEL01_0
@@ -4277,7 +4274,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL11_30
 					PIXEL12_32
 					PIXEL13_82
-					if (Diff(w[8], w[4]))
+					if (Diff(y[8], y[4]))
 					{
 						PIXEL20_0
 							PIXEL21_0
@@ -4303,7 +4300,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			{
 				PIXEL00_80
 					PIXEL01_10
-					if (Diff(w[2], w[6]))
+					if (Diff(y[2], y[6]))
 					{
 						PIXEL02_0
 							PIXEL03_0
@@ -4333,7 +4330,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			}
 			case 187:
 			{
-				if (Diff(w[4], w[2]))
+				if (Diff(y[4], y[2]))
 				{
 					PIXEL00_0
 						PIXEL01_0
@@ -4375,7 +4372,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL13_10
 					PIXEL20_82
 					PIXEL21_32
-					if (Diff(w[6], w[8]))
+					if (Diff(y[6], y[8]))
 					{
 						PIXEL22_0
 							PIXEL23_0
@@ -4397,7 +4394,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			}
 			case 119:
 			{
-				if (Diff(w[2], w[6]))
+				if (Diff(y[2], y[6]))
 				{
 					PIXEL00_81
 						PIXEL01_31
@@ -4442,7 +4439,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL21_0
 					PIXEL22_31
 					PIXEL23_81
-					if (Diff(w[8], w[4]))
+					if (Diff(y[8], y[4]))
 					{
 						PIXEL30_0
 					}
@@ -4458,7 +4455,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			case 175:
 			case 47:
 			{
-				if (Diff(w[4], w[2]))
+				if (Diff(y[4], y[2]))
 				{
 					PIXEL00_0
 				}
@@ -4489,7 +4486,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 				PIXEL00_81
 					PIXEL01_31
 					PIXEL02_0
-					if (Diff(w[2], w[6]))
+					if (Diff(y[2], y[6]))
 					{
 						PIXEL03_0
 					}
@@ -4529,7 +4526,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL30_82
 					PIXEL31_32
 					PIXEL32_0
-					if (Diff(w[6], w[8]))
+					if (Diff(y[6], y[8]))
 					{
 						PIXEL33_0
 					}
@@ -4549,7 +4546,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL11_30
 					PIXEL12_30
 					PIXEL13_10
-					if (Diff(w[8], w[4]))
+					if (Diff(y[8], y[4]))
 					{
 						PIXEL20_0
 							PIXEL30_0
@@ -4563,7 +4560,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					}
 				PIXEL21_0
 					PIXEL22_0
-					if (Diff(w[6], w[8]))
+					if (Diff(y[6], y[8]))
 					{
 						PIXEL23_0
 							PIXEL32_0
@@ -4579,7 +4576,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			}
 			case 123:
 			{
-				if (Diff(w[4], w[2]))
+				if (Diff(y[4], y[2]))
 				{
 					PIXEL00_0
 						PIXEL01_0
@@ -4596,7 +4593,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL11_0
 					PIXEL12_30
 					PIXEL13_10
-					if (Diff(w[8], w[4]))
+					if (Diff(y[8], y[4]))
 					{
 						PIXEL20_0
 							PIXEL30_0
@@ -4617,7 +4614,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			}
 			case 95:
 			{
-				if (Diff(w[4], w[2]))
+				if (Diff(y[4], y[2]))
 				{
 					PIXEL00_0
 						PIXEL01_0
@@ -4629,7 +4626,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 						PIXEL01_50
 						PIXEL10_50
 				}
-				if (Diff(w[2], w[6]))
+				if (Diff(y[2], y[6]))
 				{
 					PIXEL02_0
 						PIXEL03_0
@@ -4657,7 +4654,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			{
 				PIXEL00_80
 					PIXEL01_10
-					if (Diff(w[2], w[6]))
+					if (Diff(y[2], y[6]))
 					{
 						PIXEL02_0
 							PIXEL03_0
@@ -4675,7 +4672,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL20_10
 					PIXEL21_30
 					PIXEL22_0
-					if (Diff(w[6], w[8]))
+					if (Diff(y[6], y[8]))
 					{
 						PIXEL23_0
 							PIXEL32_0
@@ -4701,7 +4698,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL11_30
 					PIXEL12_31
 					PIXEL13_31
-					if (Diff(w[8], w[4]))
+					if (Diff(y[8], y[4]))
 					{
 						PIXEL20_0
 							PIXEL30_0
@@ -4717,7 +4714,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL22_0
 					PIXEL23_0
 					PIXEL32_0
-					if (Diff(w[6], w[8]))
+					if (Diff(y[6], y[8]))
 					{
 						PIXEL33_0
 					}
@@ -4740,7 +4737,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL20_0
 					PIXEL21_0
 					PIXEL22_0
-					if (Diff(w[6], w[8]))
+					if (Diff(y[6], y[8]))
 					{
 						PIXEL23_0
 							PIXEL32_0
@@ -4752,7 +4749,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 							PIXEL32_50
 							PIXEL33_50
 					}
-				if (Diff(w[8], w[4]))
+				if (Diff(y[8], y[4]))
 				{
 					PIXEL30_0
 				}
@@ -4765,7 +4762,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			}
 			case 235:
 			{
-				if (Diff(w[4], w[2]))
+				if (Diff(y[4], y[2]))
 				{
 					PIXEL00_0
 						PIXEL01_0
@@ -4786,7 +4783,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL21_0
 					PIXEL22_31
 					PIXEL23_81
-					if (Diff(w[8], w[4]))
+					if (Diff(y[8], y[4]))
 					{
 						PIXEL30_0
 					}
@@ -4801,7 +4798,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			}
 			case 111:
 			{
-				if (Diff(w[4], w[2]))
+				if (Diff(y[4], y[2]))
 				{
 					PIXEL00_0
 				}
@@ -4816,7 +4813,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL11_0
 					PIXEL12_32
 					PIXEL13_82
-					if (Diff(w[8], w[4]))
+					if (Diff(y[8], y[4]))
 					{
 						PIXEL20_0
 							PIXEL30_0
@@ -4837,7 +4834,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			}
 			case 63:
 			{
-				if (Diff(w[4], w[2]))
+				if (Diff(y[4], y[2]))
 				{
 					PIXEL00_0
 				}
@@ -4846,7 +4843,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL00_20
 				}
 				PIXEL01_0
-					if (Diff(w[2], w[6]))
+					if (Diff(y[2], y[6]))
 					{
 						PIXEL02_0
 							PIXEL03_0
@@ -4873,7 +4870,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			}
 			case 159:
 			{
-				if (Diff(w[4], w[2]))
+				if (Diff(y[4], y[2]))
 				{
 					PIXEL00_0
 						PIXEL01_0
@@ -4886,7 +4883,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 						PIXEL10_50
 				}
 				PIXEL02_0
-					if (Diff(w[2], w[6]))
+					if (Diff(y[2], y[6]))
 					{
 						PIXEL03_0
 					}
@@ -4912,7 +4909,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 				PIXEL00_81
 					PIXEL01_31
 					PIXEL02_0
-					if (Diff(w[2], w[6]))
+					if (Diff(y[2], y[6]))
 					{
 						PIXEL03_0
 					}
@@ -4927,7 +4924,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL20_61
 					PIXEL21_30
 					PIXEL22_0
-					if (Diff(w[6], w[8]))
+					if (Diff(y[6], y[8]))
 					{
 						PIXEL23_0
 							PIXEL32_0
@@ -4947,7 +4944,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			{
 				PIXEL00_80
 					PIXEL01_10
-					if (Diff(w[2], w[6]))
+					if (Diff(y[2], y[6]))
 					{
 						PIXEL02_0
 							PIXEL03_0
@@ -4969,7 +4966,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL30_82
 					PIXEL31_32
 					PIXEL32_0
-					if (Diff(w[6], w[8]))
+					if (Diff(y[6], y[8]))
 					{
 						PIXEL33_0
 					}
@@ -4983,7 +4980,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			{
 				PIXEL00_80
 					PIXEL01_10
-					if (Diff(w[2], w[6]))
+					if (Diff(y[2], y[6]))
 					{
 						PIXEL02_0
 							PIXEL03_0
@@ -4998,7 +4995,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 				PIXEL10_10
 					PIXEL11_30
 					PIXEL12_0
-					if (Diff(w[8], w[4]))
+					if (Diff(y[8], y[4]))
 					{
 						PIXEL20_0
 							PIXEL30_0
@@ -5014,7 +5011,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL22_0
 					PIXEL23_0
 					PIXEL32_0
-					if (Diff(w[6], w[8]))
+					if (Diff(y[6], y[8]))
 					{
 						PIXEL33_0
 					}
@@ -5038,7 +5035,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL21_0
 					PIXEL22_0
 					PIXEL23_0
-					if (Diff(w[8], w[4]))
+					if (Diff(y[8], y[4]))
 					{
 						PIXEL30_0
 					}
@@ -5048,7 +5045,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					}
 				PIXEL31_0
 					PIXEL32_0
-					if (Diff(w[6], w[8]))
+					if (Diff(y[6], y[8]))
 					{
 						PIXEL33_0
 					}
@@ -5060,7 +5057,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			}
 			case 251:
 			{
-				if (Diff(w[4], w[2]))
+				if (Diff(y[4], y[2]))
 				{
 					PIXEL00_0
 						PIXEL01_0
@@ -5080,7 +5077,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL20_0
 					PIXEL21_0
 					PIXEL22_0
-					if (Diff(w[6], w[8]))
+					if (Diff(y[6], y[8]))
 					{
 						PIXEL23_0
 							PIXEL32_0
@@ -5092,7 +5089,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 							PIXEL32_50
 							PIXEL33_50
 					}
-				if (Diff(w[8], w[4]))
+				if (Diff(y[8], y[4]))
 				{
 					PIXEL30_0
 				}
@@ -5105,7 +5102,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			}
 			case 239:
 			{
-				if (Diff(w[4], w[2]))
+				if (Diff(y[4], y[2]))
 				{
 					PIXEL00_0
 				}
@@ -5124,7 +5121,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL21_0
 					PIXEL22_31
 					PIXEL23_81
-					if (Diff(w[8], w[4]))
+					if (Diff(y[8], y[4]))
 					{
 						PIXEL30_0
 					}
@@ -5139,7 +5136,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			}
 			case 127:
 			{
-				if (Diff(w[4], w[2]))
+				if (Diff(y[4], y[2]))
 				{
 					PIXEL00_0
 				}
@@ -5148,7 +5145,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL00_20
 				}
 				PIXEL01_0
-					if (Diff(w[2], w[6]))
+					if (Diff(y[2], y[6]))
 					{
 						PIXEL02_0
 							PIXEL03_0
@@ -5163,7 +5160,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 				PIXEL10_0
 					PIXEL11_0
 					PIXEL12_0
-					if (Diff(w[8], w[4]))
+					if (Diff(y[8], y[4]))
 					{
 						PIXEL20_0
 							PIXEL30_0
@@ -5184,7 +5181,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			}
 			case 191:
 			{
-				if (Diff(w[4], w[2]))
+				if (Diff(y[4], y[2]))
 				{
 					PIXEL00_0
 				}
@@ -5194,7 +5191,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 				}
 				PIXEL01_0
 					PIXEL02_0
-					if (Diff(w[2], w[6]))
+					if (Diff(y[2], y[6]))
 					{
 						PIXEL03_0
 					}
@@ -5218,7 +5215,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			}
 			case 223:
 			{
-				if (Diff(w[4], w[2]))
+				if (Diff(y[4], y[2]))
 				{
 					PIXEL00_0
 						PIXEL01_0
@@ -5231,7 +5228,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 						PIXEL10_50
 				}
 				PIXEL02_0
-					if (Diff(w[2], w[6]))
+					if (Diff(y[2], y[6]))
 					{
 						PIXEL03_0
 					}
@@ -5245,7 +5242,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL20_10
 					PIXEL21_30
 					PIXEL22_0
-					if (Diff(w[6], w[8]))
+					if (Diff(y[6], y[8]))
 					{
 						PIXEL23_0
 							PIXEL32_0
@@ -5266,7 +5263,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 				PIXEL00_81
 					PIXEL01_31
 					PIXEL02_0
-					if (Diff(w[2], w[6]))
+					if (Diff(y[2], y[6]))
 					{
 						PIXEL03_0
 					}
@@ -5285,7 +5282,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL30_82
 					PIXEL31_32
 					PIXEL32_0
-					if (Diff(w[6], w[8]))
+					if (Diff(y[6], y[8]))
 					{
 						PIXEL33_0
 					}
@@ -5297,7 +5294,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			}
 			case 255:
 			{
-				if (Diff(w[4], w[2]))
+				if (Diff(y[4], y[2]))
 				{
 					PIXEL00_0
 				}
@@ -5307,7 +5304,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 				}
 				PIXEL01_0
 					PIXEL02_0
-					if (Diff(w[2], w[6]))
+					if (Diff(y[2], y[6]))
 					{
 						PIXEL03_0
 					}
@@ -5323,7 +5320,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					PIXEL21_0
 					PIXEL22_0
 					PIXEL23_0
-					if (Diff(w[8], w[4]))
+					if (Diff(y[8], y[4]))
 					{
 						PIXEL30_0
 					}
@@ -5333,7 +5330,7 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 					}
 				PIXEL31_0
 					PIXEL32_0
-					if (Diff(w[6], w[8]))
+					if (Diff(y[6], y[8]))
 					{
 						PIXEL33_0
 					}
@@ -5345,11 +5342,13 @@ __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, i
 			}
 			}
 			sp++;
+			yuv++;
 			dp += 4;
 		}
 
 		sRowP += srb;
 		sp = (uint32_t *)sRowP;
+		yuv = (uint32_t *)sRowP;
 
 		dRowP += drb * 4;
 		dp = (uint32_t *)dRowP;
