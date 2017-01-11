@@ -11,6 +11,7 @@
 #include "image.h"
 #include <cstdio>
 #include <iostream>
+#include "gputimer.h"
 
 #define FACTOR 4
 
@@ -38,12 +39,11 @@ int main()
 	cudaGetDeviceProperties(&deviceProp, 0);
 
 	std::cout << "Read images" << std::endl;
-	Image *org = new Image("imageinput.png");
-	Image *orgy = new Image("imageinput.png");
+	Image *org = new Image("image13.png");
+	Image *orgy = new Image("image13.png");
 	uint32_t *input, *out, *yuv;
 	
 	hqxInit();
-	
 	
 	cudaMalloc(&input, org->getHeight() * org->getWidth() * sizeof(uint32_t));
 	cudaMalloc(&out, org->getHeight() * org->getWidth() * sizeof(uint32_t));
@@ -51,8 +51,6 @@ int main()
 
 	cudaMemcpy(input, org->getData(), org->getHeight() * org->getWidth() * sizeof(uint32_t), cudaMemcpyHostToDevice);
 	cudaMemcpy(yuv, RGBtoYUV, 16777216 * sizeof(uint32_t), cudaMemcpyHostToDevice);
-	//input = (uint32_t*) malloc(org->getHeight() * org->getWidth() * sizeof(uint32_t));
-	//out = (uint32_t*)malloc(org->getHeight() * org->getWidth() * sizeof(uint32_t));
 	
 	ConvertREGtoYUV <<<((org->getHeight() * org->getWidth()) / deviceProp.maxThreadsPerBlock)+1, deviceProp.maxThreadsPerBlock >>>(input, out, yuv, deviceProp.maxThreadsPerBlock);
 
@@ -75,7 +73,7 @@ int main()
 	cudaFree(yuv);
 
 	//convertToYUV(orgy, org);
-	Image *res = new Image("imageout12.png", org->getWidth() * FACTOR, org->getHeight() * FACTOR);
+	Image *res = new Image("image14.png", org->getWidth() * FACTOR, org->getHeight() * FACTOR);
 
 	
 	hq4x_32(org->getData(), res->getData(), org->getWidth(), org->getHeight(), orgy->getData(), input, out);
@@ -93,27 +91,14 @@ int main()
 		fprintf(stderr, "cudaDeviceReset failed!");
 		return 1;
 	}
-
 	std:getchar();
-
     return 0;
 }
 
 __global__ void ConvertREGtoYUV(uint32_t *sp, uint32_t *br, uint32_t *array, int maxThreads) {
 	int i = threadIdx.x + maxThreads * blockIdx.x;
-
 	br[i] = rgb_to_yuv(sp[i],array);
 }
-/*
-void convertToYUV(Image *orgy,Image *org) {
-	uint32_t *br = orgy->getData();
-	uint32_t *sp = org->getData();
-
-	for (int row = 0; row < org->getHeight() * org->getWidth(); ++row) {
-			br[row] = rgb_to_yuv(sp[row]);
-	}
-	//return size;
-}*/
 
 void hqxInit(void)
 {
@@ -147,15 +132,17 @@ void hq4x_32(uint32_t * sp, uint32_t * dp, int Xres, int Yres, uint32_t * orgy, 
 	cudaMalloc(&fpo, 256 * sizeof(FunctionPointer));
 
 	initFunctions << <1, 1 >> > (fpo);
-	//cudaMalloc(&yuv, Xres * Yres * sizeof(uint32_t));
+	cudaStatus = cudaDeviceSynchronize();
 
 	cudaMemcpy(input, sp, Xres * Yres * sizeof(uint32_t), cudaMemcpyHostToDevice);
 	cudaMemcpy(yuv, orgy, Xres * Yres * sizeof(uint32_t), cudaMemcpyHostToDevice);
-	//cudaMemcpy(fpo, functions, 256 * sizeof(FunctionPointer), cudaMemcpyHostToDevice);
 
 	int blockdimension = ((Xres*Yres) / deviceProp.maxThreadsPerBlock) + 1;
 	//fprintf(stderr, "%d", blockdimension);
+	GpuTimer timer;
+	timer.Start();
 	hq4x<<<blockdimension, deviceProp.maxThreadsPerBlock>>>(input, rowBytesL, out, rowBytesL*FACTOR, Xres, Yres, yuv, deviceProp.maxThreadsPerBlock, fpo);
+	
 	//hq4x_32_rb(sp, rowBytesL, dp, rowBytesL * 4, Xres, Yres);
 
 	cudaStatus = cudaGetLastError();
@@ -164,6 +151,8 @@ void hq4x_32(uint32_t * sp, uint32_t * dp, int Xres, int Yres, uint32_t * orgy, 
 	}
 
 	cudaStatus = cudaDeviceSynchronize();
+	timer.Stop();
+	fprintf(stderr, "Timer: %g", timer.Elapsed());
 	if (cudaStatus != cudaSuccess) {
 		fprintf(stderr, "cudaDeviceSynchronize returned error code %d after launching addKernel!\n", cudaStatus);
 	}
@@ -172,6 +161,11 @@ void hq4x_32(uint32_t * sp, uint32_t * dp, int Xres, int Yres, uint32_t * orgy, 
 	if (cudaStatus != cudaSuccess) {
 		fprintf(stderr, "cudaMalloc failed!");
 	}
+
+	cudaFree(input);
+	cudaFree(out);
+	cudaFree(yuv);
+	cudaFree(fpo);
 }
 
 __global__ void hq4x(uint32_t * sp, uint32_t srb, uint32_t * dp, uint32_t drb, int Xres, int Yres, uint32_t *yuv, int maxThreads, FunctionPointer *functions)
