@@ -1,0 +1,10 @@
+start HQ4X.exe
+start HQ4X.exe
+start HQ4X.exe
+start HQ4X.exe
+start HQ4X.exe
+start HQ4X.exe
+start HQ4X.exe
+start HQ4X.exe
+start HQ4X.exe
+start HQ4X.exe

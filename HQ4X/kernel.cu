@@ -137,7 +137,7 @@ void hq4x_32(uint32_t * sp, uint32_t * dp, int Xres, int Yres, uint32_t * orgy, 
 	cudaMemcpy(input, sp, Xres * Yres * sizeof(uint32_t), cudaMemcpyHostToDevice);
 	cudaMemcpy(yuv, orgy, Xres * Yres * sizeof(uint32_t), cudaMemcpyHostToDevice);
 
-	int blockdimension = ((Xres*Yres) / deviceProp.maxThreadsPerBlock) + 1;
+	int blockdimension = (Xres*Yres) > deviceProp.maxThreadsPerBlock ? (Xres*Yres) / deviceProp.maxThreadsPerBlock : 1;
 	//fprintf(stderr, "%d", blockdimension);
 	GpuTimer timer;
 	timer.Start();
