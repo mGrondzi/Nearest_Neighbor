@@ -19,9 +19,10 @@ uint32_t   RGBtoYUV[16777216];
 uint32_t   YUV1, YUV2;
 
 void hqxInit();
-void hq4x_32(uint32_t * sp, uint32_t * dp, int Xres, int Yres, uint32_t*);
+void hq4x_32(uint32_t * sp, uint32_t * dp, int Xres, int Yres, uint32_t*, uint32_t*, uint32_t*);
 __global__ void hq4x(uint32_t*, uint32_t, uint32_t*, uint32_t, int, int, uint32_t*, int);
-void convertToYUV(Image*, Image*);
+//void convertToYUV(Image*, Image*);
+__global__ void ConvertREGtoYUV(uint32_t*, uint32_t*, uint32_t*, int);
 
 int main()
 {
@@ -38,17 +39,45 @@ int main()
 	std::cout << "Read images" << std::endl;
 	Image *org = new Image("imageinput.png");
 	Image *orgy = new Image("imageinput.png");
-	//uint32_t *input, *out;
+	uint32_t *input, *out, *yuv;
+	
 	hqxInit();
 	
+	
+	cudaMalloc(&input, org->getHeight() * org->getWidth() * sizeof(uint32_t));
+	cudaMalloc(&out, org->getHeight() * org->getWidth() * sizeof(uint32_t));
+	cudaMalloc(&yuv, 16777216 * sizeof(uint32_t));
+
+	cudaMemcpy(input, org->getData(), org->getHeight() * org->getWidth() * sizeof(uint32_t), cudaMemcpyHostToDevice);
+	cudaMemcpy(yuv, RGBtoYUV, 16777216 * sizeof(uint32_t), cudaMemcpyHostToDevice);
 	//input = (uint32_t*) malloc(org->getHeight() * org->getWidth() * sizeof(uint32_t));
 	//out = (uint32_t*)malloc(org->getHeight() * org->getWidth() * sizeof(uint32_t));
 	
-	convertToYUV(orgy, org);
+	ConvertREGtoYUV <<<((org->getHeight() * org->getWidth()) / deviceProp.maxThreadsPerBlock)+1, deviceProp.maxThreadsPerBlock >>>(input, out, yuv, deviceProp.maxThreadsPerBlock);
+
+	// Check for any errors launching the kernel
+	cudaStatus = cudaGetLastError();
+	if (cudaStatus != cudaSuccess) {
+		fprintf(stderr, "addKernel launch failed: %s\n", cudaGetErrorString(cudaStatus));
+	}
+
+	cudaStatus = cudaDeviceSynchronize();
+	if (cudaStatus != cudaSuccess) {
+		fprintf(stderr, "cudaDeviceSynchronize returned error code %d after launching addKernel!\n", cudaStatus);
+	}
+
+	cudaStatus = cudaMemcpy(orgy->getData(), out, orgy->getHeight() * orgy->getWidth() * sizeof(uint32_t), cudaMemcpyDeviceToHost);
+	if (cudaStatus != cudaSuccess) {
+		fprintf(stderr, "cudaMalloc failed!");
+	}
+
+	cudaFree(yuv);
+
+	//convertToYUV(orgy, org);
 	Image *res = new Image("imageout12.png", org->getWidth() * FACTOR, org->getHeight() * FACTOR);
 
 	
-	hq4x_32(org->getData(), res->getData(), org->getWidth(), org->getHeight(), orgy->getData());
+	hq4x_32(org->getData(), res->getData(), org->getWidth(), org->getHeight(), orgy->getData(), input, out);
 
 	std::cout << "Save new image" << std::endl;
 	res->saveImage();
@@ -69,6 +98,12 @@ int main()
     return 0;
 }
 
+__global__ void ConvertREGtoYUV(uint32_t *sp, uint32_t *br, uint32_t *array, int maxThreads) {
+	int i = threadIdx.x + maxThreads * blockIdx.x;
+
+	br[i] = rgb_to_yuv(sp[i],array);
+}
+/*
 void convertToYUV(Image *orgy,Image *org) {
 	uint32_t *br = orgy->getData();
 	uint32_t *sp = org->getData();
@@ -77,7 +112,7 @@ void convertToYUV(Image *orgy,Image *org) {
 			br[row] = rgb_to_yuv(sp[row]);
 	}
 	//return size;
-}
+}*/
 
 void hqxInit(void)
 {
@@ -236,19 +271,19 @@ void hqxInit(void)
 #define PIXEL33_81    *(dp+indexVier+dpL+dpL+dpL+3) = Interp8(w[5], w[6]);
 #define PIXEL33_82    *(dp+indexVier+dpL+dpL+dpL+3) = Interp8(w[5], w[8]);
 
-void hq4x_32(uint32_t * sp, uint32_t * dp, int Xres, int Yres, uint32_t * orgy)
+void hq4x_32(uint32_t * sp, uint32_t * dp, int Xres, int Yres, uint32_t * orgy, uint32_t *input, uint32_t *yuv)
 {
 	cudaError_t cudaStatus;
 	uint32_t rowBytesL = Xres * FACTOR;
-	uint32_t *input, *out, *yuv;
+	uint32_t *out;
 	cudaDeviceProp deviceProp;
 
 	cudaGetDeviceProperties(&deviceProp, 0);
 
 	cudaStatus = cudaSetDevice(0);
-	cudaMalloc(&input, Xres * Yres * sizeof(uint32_t));
+	//cudaMalloc(&input, Xres * Yres * sizeof(uint32_t));
 	cudaMalloc(&out, Xres * FACTOR * Yres * FACTOR * sizeof(uint32_t));
-	cudaMalloc(&yuv, Xres * Yres * sizeof(uint32_t));
+	//cudaMalloc(&yuv, Xres * Yres * sizeof(uint32_t));
 
 	cudaMemcpy(input, sp, Xres * Yres * sizeof(uint32_t), cudaMemcpyHostToDevice);
 	cudaMemcpy(yuv, orgy, Xres * Yres * sizeof(uint32_t), cudaMemcpyHostToDevice);
