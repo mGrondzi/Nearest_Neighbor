@@ -39,8 +39,8 @@ int main()
 	cudaGetDeviceProperties(&deviceProp, 0);
 
 	std::cout << "Read images" << std::endl;
-	Image *org = new Image("image13.png");
-	Image *orgy = new Image("image13.png");
+	Image *org = new Image("image14.png");
+	Image *orgy = new Image("image14.png");
 	uint32_t *input, *out, *yuv;
 	
 	hqxInit();
@@ -73,7 +73,7 @@ int main()
 	cudaFree(yuv);
 
 	//convertToYUV(orgy, org);
-	Image *res = new Image("image14.png", org->getWidth() * FACTOR, org->getHeight() * FACTOR);
+	Image *res = new Image("image15.png", org->getWidth() * FACTOR, org->getHeight() * FACTOR);
 
 	
 	hq4x_32(org->getData(), res->getData(), org->getWidth(), org->getHeight(), orgy->getData(), input, out);
@@ -144,11 +144,6 @@ void hq4x_32(uint32_t * sp, uint32_t * dp, int Xres, int Yres, uint32_t * orgy, 
 	hq4x<<<blockdimension, deviceProp.maxThreadsPerBlock>>>(input, rowBytesL, out, rowBytesL*FACTOR, Xres, Yres, yuv, deviceProp.maxThreadsPerBlock, fpo);
 	
 	//hq4x_32_rb(sp, rowBytesL, dp, rowBytesL * 4, Xres, Yres);
-
-	cudaStatus = cudaGetLastError();
-	if (cudaStatus != cudaSuccess) {
-		fprintf(stderr, "addKernel launch failed: %s\n", cudaGetErrorString(cudaStatus));
-	}
 
 	cudaStatus = cudaDeviceSynchronize();
 	timer.Stop();
